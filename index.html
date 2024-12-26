@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>App Store Creative Audit Tool</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <style>
+        .screenshot-preview {
+            max-width: 200px;
+            max-height: 200px;
+            object-fit: contain;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-4xl mx-auto bg-white rounded-lg shadow p-6">
+        <h1 class="text-2xl font-bold mb-6">App Store Creative Audit Tool</h1>
+        
+        <!-- App Details Form -->
+        <div class="mb-6">
+            <label class="block mb-2 font-semibold">App Name</label>
+            <input type="text" id="appName" class="w-full p-2 border rounded" placeholder="Enter app name">
+            
+            <label class="block mt-4 mb-2 font-semibold">App Store URL</label>
+            <input type="text" id="appStoreUrl" class="w-full p-2 border rounded" placeholder="Enter App Store URL">
+        </div>
+
+        <!-- Screenshot Upload -->
+        <div class="mb-6">
+            <label class="block mb-2 font-semibold">Upload Screenshots</label>
+            <div class="border-2 border-dashed border-gray-300 p-4 text-center rounded">
+                <input type="file" id="screenshotUpload" multiple accept="image/*" class="hidden">
+                <label for="screenshotUpload" class="cursor-pointer text-blue-500">Click to upload screenshots</label>
+            </div>
+            <div id="screenshotPreview" class="mt-4 grid grid-cols-3 gap-4"></div>
+        </div>
+
+        <!-- Analysis Results -->
+        <div id="analysisResults" class="mb-6 hidden">
+            <h2 class="text-xl font-bold mb-4">Analysis Results</h2>
+            <div class="space-y-4">
+                <div id="titleAnalysis" class="p-4 bg-gray-50 rounded"></div>
+                <div id="colorAnalysis" class="p-4 bg-gray-50 rounded"></div>
+                <div id="layoutAnalysis" class="p-4 bg-gray-50 rounded"></div>
+                <div id="bestPractices" class="p-4 bg-gray-50 rounded"></div>
+            </div>
+        </div>
+
+        <!-- Generate Report Button -->
+        <button id="generateReport" class="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600">
+            Generate Report
+        </button>
+    </div>
+
+    <script>
+        // Handle screenshot upload and preview
+        document.getElementById('screenshotUpload').addEventListener('change', function(e) {
+            const previewDiv = document.getElementById('screenshotPreview');
+            previewDiv.innerHTML = '';
+            
+            Array.from(e.target.files).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.className = 'screenshot-preview rounded';
+                    previewDiv.appendChild(img);
+                }
+                reader.readAsDataURL(file);
+            });
+
+            // Show analysis results section
+            document.getElementById('analysisResults').classList.remove('hidden');
+        });
+
+        // Handle report generation
+        document.getElementById('generateReport').addEventListener('click', function() {
+            const appName = document.getElementById('appName').value;
+            const screenshots = document.getElementById('screenshotUpload').files;
+
+            // Simple analysis examples
+            const titleAnalysis = document.getElementById('titleAnalysis');
+            titleAnalysis.innerHTML = `
+                <h3 class="font-bold mb-2">Title Analysis</h3>
+                <p>Number of screenshots: ${screenshots.length}</p>
+                <p>Recommendation: App Store allows up to 10 screenshots. Consider adding more if you have less.</p>
+            `;
+
+            const colorAnalysis = document.getElementById('colorAnalysis');
+            colorAnalysis.innerHTML = `
+                <h3 class="font-bold mb-2">Color Analysis</h3>
+                <p>Analysis will detect dominant colors and brand consistency across screenshots.</p>
+            `;
+
+            const layoutAnalysis = document.getElementById('layoutAnalysis');
+            layoutAnalysis.innerHTML = `
+                <h3 class="font-bold mb-2">Layout Analysis</h3>
+                <p>Checking for consistent layout patterns and visual hierarchy.</p>
+            `;
+
+            const bestPractices = document.getElementById('bestPractices');
+            bestPractices.innerHTML = `
+                <h3 class="font-bold mb-2">Best Practices Check</h3>
+                <ul class="list-disc pl-4">
+                    <li>First 2 screenshots are most important - should showcase key features</li>
+                    <li>Maintain consistent branding across all screenshots</li>
+                    <li>Use clear, readable text</li>
+                    <li>Include call-to-action elements</li>
+                </ul>
+            `;
+        });
+    </script>
+</body>
+</html>
