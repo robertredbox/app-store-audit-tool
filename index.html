@@ -3,11 +3,18 @@
 <head>
     <title>App Store Creative Audit Tool</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         .screenshot-preview {
             max-width: 200px;
             max-height: 200px;
             object-fit: contain;
+        }
+        @media print {
+            .no-print {
+                display: none;
+            }
         }
     </style>
 </head>
@@ -16,7 +23,7 @@
         <h1 class="text-2xl font-bold mb-6">App Store Creative Audit Tool</h1>
         
         <!-- App Details Form -->
-        <div class="mb-6">
+        <div class="mb-6 no-print">
             <label class="block mb-2 font-semibold">App Name</label>
             <input type="text" id="appName" class="w-full p-2 border rounded" placeholder="Enter app name">
             
@@ -25,7 +32,7 @@
         </div>
 
         <!-- Screenshot Upload -->
-        <div class="mb-6">
+        <div class="mb-6 no-print">
             <label class="block mb-2 font-semibold">Upload Screenshots</label>
             <div class="border-2 border-dashed border-gray-300 p-4 text-center rounded">
                 <input type="file" id="screenshotUpload" multiple accept="image/*" class="hidden">
@@ -36,19 +43,30 @@
 
         <!-- Analysis Results -->
         <div id="analysisResults" class="mb-6 hidden">
-            <h2 class="text-xl font-bold mb-4">Analysis Results</h2>
-            <div class="space-y-4">
-                <div id="titleAnalysis" class="p-4 bg-gray-50 rounded"></div>
-                <div id="colorAnalysis" class="p-4 bg-gray-50 rounded"></div>
-                <div id="layoutAnalysis" class="p-4 bg-gray-50 rounded"></div>
-                <div id="bestPractices" class="p-4 bg-gray-50 rounded"></div>
+            <div id="reportContent">
+                <h2 class="text-xl font-bold mb-4">Creative Analysis Report</h2>
+                <div class="mb-4">
+                    <strong>App Name:</strong> <span id="reportAppName"></span><br>
+                    <strong>Date Generated:</strong> <span id="reportDate"></span>
+                </div>
+                <div class="space-y-4">
+                    <div id="titleAnalysis" class="p-4 bg-gray-50 rounded"></div>
+                    <div id="colorAnalysis" class="p-4 bg-gray-50 rounded"></div>
+                    <div id="layoutAnalysis" class="p-4 bg-gray-50 rounded"></div>
+                    <div id="bestPractices" class="p-4 bg-gray-50 rounded"></div>
+                </div>
             </div>
         </div>
 
-        <!-- Generate Report Button -->
-        <button id="generateReport" class="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600">
-            Generate Report
-        </button>
+        <!-- Action Buttons -->
+        <div class="flex space-x-4">
+            <button id="generateReport" class="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 no-print">
+                Generate Report
+            </button>
+            <button id="downloadPDF" class="hidden bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600 no-print">
+                Download PDF
+            </button>
+        </div>
     </div>
 
     <script>
@@ -67,15 +85,20 @@
                 }
                 reader.readAsDataURL(file);
             });
-
-            // Show analysis results section
-            document.getElementById('analysisResults').classList.remove('hidden');
         });
 
         // Handle report generation
         document.getElementById('generateReport').addEventListener('click', function() {
             const appName = document.getElementById('appName').value;
             const screenshots = document.getElementById('screenshotUpload').files;
+
+            // Show analysis results
+            document.getElementById('analysisResults').classList.remove('hidden');
+            document.getElementById('downloadPDF').classList.remove('hidden');
+            
+            // Update report header
+            document.getElementById('reportAppName').textContent = appName;
+            document.getElementById('reportDate').textContent = new Date().toLocaleDateString();
 
             // Simple analysis examples
             const titleAnalysis = document.getElementById('titleAnalysis');
@@ -107,6 +130,28 @@
                     <li>Include call-to-action elements</li>
                 </ul>
             `;
+        });
+
+        // Handle PDF download
+        document.getElementById('downloadPDF').addEventListener('click', async function() {
+            const reportContent = document.getElementById('reportContent');
+            const appName = document.getElementById('appName').value;
+            
+            try {
+                const canvas = await html2canvas(reportContent);
+                const imgData = canvas.toDataURL('image/png');
+                
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                const pageWidth = pdf.internal.pageSize.getWidth();
+                const pageHeight = pdf.internal.pageSize.getHeight();
+                
+                pdf.addImage(imgData, 'PNG', 0, 0, pageWidth, pageHeight);
+                pdf.save(`${appName}_creative_analysis.pdf`);
+            } catch (error) {
+                console.error('Error generating PDF:', error);
+                alert('There was an error generating the PDF. Please try again.');
+            }
         });
     </script>
 </body>
