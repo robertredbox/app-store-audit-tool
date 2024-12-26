@@ -11,148 +11,109 @@
             max-height: 200px;
             object-fit: contain;
         }
+        .report-heading {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1a365d;
+            margin-bottom: 1.5rem;
+        }
+        .report-section {
+            margin-bottom: 2rem;
+            page-break-inside: avoid;
+        }
+        .report-section-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2c5282;
+            margin-bottom: 1rem;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 0.5rem;
+        }
+        .screenshot-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .recommendation-item {
+            margin-bottom: 1rem;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+        .recommendation-item:before {
+            content: "•";
+            position: absolute;
+            left: 0.5rem;
+            color: #2c5282;
+        }
         @media print {
             .no-print {
                 display: none;
+            }
+            body {
+                padding: 0;
+                margin: 0;
+            }
+            .report-container {
+                padding: 20mm;
             }
         }
     </style>
 </head>
 <body class="bg-gray-100 p-8">
+    <!-- Tool Interface -->
     <div class="max-w-4xl mx-auto bg-white rounded-lg shadow p-6">
-        <h1 class="text-2xl font-bold mb-6">App Store Creative Audit Tool</h1>
-        
-        <!-- App Details Form -->
-        <div class="mb-6 no-print">
-            <label class="block mb-2 font-semibold">App Name</label>
-            <input type="text" id="appName" class="w-full p-2 border rounded" placeholder="Enter app name">
-            
-            <label class="block mt-4 mb-2 font-semibold">App Store URL</label>
-            <input type="text" id="appStoreUrl" class="w-full p-2 border rounded" placeholder="Enter App Store URL">
+        <!-- Same tool interface code... -->
+    </div>
+
+    <!-- Report Template (Hidden until generated) -->
+    <div id="reportContent" class="hidden report-container bg-white">
+        <div class="flex items-center justify-between mb-8">
+            <h1 class="report-heading">App Store Creative Analysis</h1>
+            <img src="logo.png" alt="Logo" class="h-12">
         </div>
 
-        <!-- Screenshot Upload -->
-        <div class="mb-6 no-print">
-            <label class="block mb-2 font-semibold">Upload Screenshots</label>
-            <div class="border-2 border-dashed border-gray-300 p-4 text-center rounded">
-                <input type="file" id="screenshotUpload" multiple accept="image/*" class="hidden">
-                <label for="screenshotUpload" class="cursor-pointer text-blue-500">Click to upload screenshots</label>
-            </div>
-            <div id="screenshotPreview" class="mt-4 grid grid-cols-3 gap-4"></div>
-        </div>
-
-        <!-- Analysis Results -->
-        <div id="analysisResults" class="mb-6 hidden">
-            <div id="reportContent">
-                <h2 class="text-xl font-bold mb-4">Creative Analysis Report</h2>
-                <div class="mb-4">
-                    <strong>App Name:</strong> <span id="reportAppName"></span><br>
-                    <strong>Date Generated:</strong> <span id="reportDate"></span>
+        <div class="mb-6">
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <strong class="text-gray-700">App Name:</strong>
+                    <span id="reportAppName" class="ml-2"></span>
                 </div>
-                <div class="space-y-4">
-                    <div id="titleAnalysis" class="p-4 bg-gray-50 rounded"></div>
-                    <div id="colorAnalysis" class="p-4 bg-gray-50 rounded"></div>
-                    <div id="layoutAnalysis" class="p-4 bg-gray-50 rounded"></div>
-                    <div id="bestPractices" class="p-4 bg-gray-50 rounded"></div>
+                <div>
+                    <strong class="text-gray-700">Analysis Date:</strong>
+                    <span id="reportDate" class="ml-2"></span>
+                </div>
+                <div>
+                    <strong class="text-gray-700">Store Link:</strong>
+                    <span id="reportStoreUrl" class="ml-2"></span>
                 </div>
             </div>
         </div>
 
-        <!-- Action Buttons -->
-        <div class="flex space-x-4">
-            <button id="generateReport" class="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 no-print">
-                Generate Report
-            </button>
-            <button id="downloadPDF" class="hidden bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600 no-print">
-                Download PDF
-            </button>
+        <div class="report-section">
+            <h2 class="report-section-title">Screenshot Overview</h2>
+            <div id="screenshotGrid" class="screenshot-grid"></div>
+        </div>
+
+        <div class="report-section">
+            <h2 class="report-section-title">Visual Analysis</h2>
+            <div id="visualAnalysis" class="space-y-4"></div>
+        </div>
+
+        <div class="report-section">
+            <h2 class="report-section-title">Best Practices Review</h2>
+            <div id="bestPracticesAnalysis" class="space-y-4"></div>
+        </div>
+
+        <div class="report-section">
+            <h2 class="report-section-title">Recommendations</h2>
+            <div id="recommendations" class="space-y-4"></div>
         </div>
     </div>
 
     <script>
-        // Handle screenshot upload and preview
-        document.getElementById('screenshotUpload').addEventListener('change', function(e) {
-            const previewDiv = document.getElementById('screenshotPreview');
-            previewDiv.innerHTML = '';
-            
-            Array.from(e.target.files).forEach(file => {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const img = document.createElement('img');
-                    img.src = e.target.result;
-                    img.className = 'screenshot-preview rounded';
-                    previewDiv.appendChild(img);
-                }
-                reader.readAsDataURL(file);
-            });
-        });
-
-        // Handle report generation
-        document.getElementById('generateReport').addEventListener('click', function() {
-            const appName = document.getElementById('appName').value;
-            const screenshots = document.getElementById('screenshotUpload').files;
-
-            // Show analysis results
-            document.getElementById('analysisResults').classList.remove('hidden');
-            document.getElementById('downloadPDF').classList.remove('hidden');
-            
-            // Update report header
-            document.getElementById('reportAppName').textContent = appName;
-            document.getElementById('reportDate').textContent = new Date().toLocaleDateString();
-
-            // Simple analysis examples
-            const titleAnalysis = document.getElementById('titleAnalysis');
-            titleAnalysis.innerHTML = `
-                <h3 class="font-bold mb-2">Title Analysis</h3>
-                <p>Number of screenshots: ${screenshots.length}</p>
-                <p>Recommendation: App Store allows up to 10 screenshots. Consider adding more if you have less.</p>
-            `;
-
-            const colorAnalysis = document.getElementById('colorAnalysis');
-            colorAnalysis.innerHTML = `
-                <h3 class="font-bold mb-2">Color Analysis</h3>
-                <p>Analysis will detect dominant colors and brand consistency across screenshots.</p>
-            `;
-
-            const layoutAnalysis = document.getElementById('layoutAnalysis');
-            layoutAnalysis.innerHTML = `
-                <h3 class="font-bold mb-2">Layout Analysis</h3>
-                <p>Checking for consistent layout patterns and visual hierarchy.</p>
-            `;
-
-            const bestPractices = document.getElementById('bestPractices');
-            bestPractices.innerHTML = `
-                <h3 class="font-bold mb-2">Best Practices Check</h3>
-                <ul class="list-disc pl-4">
-                    <li>First 2 screenshots are most important - should showcase key features</li>
-                    <li>Maintain consistent branding across all screenshots</li>
-                    <li>Use clear, readable text</li>
-                    <li>Include call-to-action elements</li>
-                </ul>
-            `;
-        });
-
-        // Handle PDF download
-        document.getElementById('downloadPDF').addEventListener('click', async function() {
-            const reportContent = document.getElementById('reportContent');
-            const appName = document.getElementById('appName').value;
-            
-            try {
-                const canvas = await html2canvas(reportContent);
-                const imgData = canvas.toDataURL('image/png');
-                
-                const { jsPDF } = window.jspdf;
-                const pdf = new jsPDF('p', 'mm', 'a4');
-                const pageWidth = pdf.internal.pageSize.getWidth();
-                const pageHeight = pdf.internal.pageSize.getHeight();
-                
-                pdf.addImage(imgData, 'PNG', 0, 0, pageWidth, pageHeight);
-                pdf.save(`${appName}_creative_analysis.pdf`);
-            } catch (error) {
-                console.error('Error generating PDF:', error);
-                alert('There was an error generating the PDF. Please try again.');
-            }
-        });
+        // Enhanced JavaScript code for better analysis and PDF generation
+        // ... (will provide in next message due to length)
     </script>
 </body>
 </html>
